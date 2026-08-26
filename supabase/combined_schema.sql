@@ -1,11 +1,8 @@
--- Ledgr — combined schema (all migrations, in order).
--- Paste into a fresh Supabase project SQL Editor and Run. Atomic (BEGIN/COMMIT).
+-- Ledgr — combined schema (all migrations, in order). Paste into a fresh Supabase project SQL Editor and Run. Atomic.
 
 BEGIN;
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000000_extensions.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0000 · Extensions
 -- ─────────────────────────────────────────────────────────────
@@ -17,9 +14,7 @@ create extension if not exists citext;      -- case-insensitive emails
 create schema if not exists app;
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000100_app_helpers.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0001 · Shared trigger helper
 --
@@ -42,9 +37,7 @@ end;
 $$;
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000200_identity.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0002 · Identity & tenancy
 -- ─────────────────────────────────────────────────────────────
@@ -199,9 +192,7 @@ grant execute on function public.create_organization(
 ) to authenticated;
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000250_rls_predicates.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0002b · RLS predicate functions
 --
@@ -299,9 +290,7 @@ as $$
 $$;
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000300_identity_rls.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0003 · Row-Level Security for the identity layer
 --
@@ -377,9 +366,7 @@ create policy platform_admins_select on public.platform_admins
   for select using (app.is_platform_admin());
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000400_accounting_core.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0004 · Accounting core (ledger truth)
 --
@@ -577,9 +564,7 @@ create trigger trg_guard_journals
   for each row execute function app.guard_journals();
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000500_accounting_functions.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0005 · Accounting engine (RPC)
 --
@@ -882,9 +867,7 @@ $$;
 grant execute on function public.account_balance(uuid, date) to authenticated;
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000600_default_chart_of_accounts.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0006 · Default Chart of Accounts seeder (§6)
 --
@@ -961,9 +944,7 @@ $$;
 grant execute on function public.seed_default_accounts(uuid) to authenticated;
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000700_accounting_rls.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0007 · RLS for the accounting core
 --
@@ -1035,9 +1016,7 @@ create policy transactions_select on public.transactions
   );
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000800_sme_entities.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0008 · SME entities (customers, suppliers, invoices,
 -- expenses, payments, products, inventory)
@@ -1208,9 +1187,7 @@ create table public.inventory_transactions (
 create index idx_inv_txn_org on public.inventory_transactions (organization_id, product_id);
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101000900_sme_rls.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0009 · RLS for SME entities
 --
@@ -1270,9 +1247,7 @@ create policy inventory_txn_select on public.inventory_transactions
   for select using (organization_id in (select app.current_member_org_ids()) or app.is_platform_admin());
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101001000_sme_functions.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0010 · SME posting RPCs
 -- Invoices, invoice payments and expenses — each posts through
@@ -1556,9 +1531,7 @@ grant execute on function public.record_expense(
 ) to authenticated;
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101001100_platform.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0011 · Platform layer
 -- Plans, subscriptions, billing payments, notifications, audit
@@ -1774,9 +1747,7 @@ $$;
 grant execute on function public.ensure_subscription(uuid) to authenticated;
 
 
--- ═══════════════════════════════════════════════════════════
 -- FILE: 20260101001200_platform_rls.sql
--- ═══════════════════════════════════════════════════════════
 -- ─────────────────────────────────────────────────────────────
 -- Ledgr · 0012 · RLS for the platform layer
 -- ─────────────────────────────────────────────────────────────
@@ -1864,6 +1835,41 @@ create policy ticket_messages_insert on public.ticket_messages
     app.is_platform_admin()
     or (organization_id in (select app.current_member_org_ids()) and author_id = auth.uid())
   );
+
+
+-- FILE: 20260101001300_notifications_mark_read.sql
+-- ─────────────────────────────────────────────────────────────
+-- Ledgr · 0013 · Harden notifications updates (security review)
+--
+-- The previous notifications_update policy let a member UPDATE any column of a
+-- notification in their org (content tampering within the org). Replace it with
+-- a SECURITY DEFINER RPC that only ever sets read_at, matching the app's
+-- "all writes go through RPC" pattern. Clients can no longer update the table
+-- directly.
+-- ─────────────────────────────────────────────────────────────
+
+drop policy if exists notifications_update on public.notifications;
+
+create or replace function public.mark_notifications_read(p_org uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, app
+as $$
+begin
+  if p_org not in (select app.current_member_org_ids()) then
+    raise exception 'Not authorised.' using errcode = '42501';
+  end if;
+
+  update public.notifications
+    set read_at = now()
+    where organization_id = p_org
+      and (user_id = auth.uid() or user_id is null)
+      and read_at is null;
+end;
+$$;
+
+grant execute on function public.mark_notifications_read(uuid) to authenticated;
 
 
 COMMIT;

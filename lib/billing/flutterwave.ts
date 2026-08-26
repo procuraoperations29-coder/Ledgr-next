@@ -1,4 +1,5 @@
 import 'server-only';
+import crypto from 'node:crypto';
 import type {
   PaymentProvider,
   InitializeParams,
@@ -60,7 +61,11 @@ export function createFlutterwaveProvider(
 
     verifyWebhookSignature(_rawBody: string, signature: string | null): boolean {
       // Flutterwave sends the configured secret hash in the verif-hash header.
-      return Boolean(signature) && signature === secretHash;
+      // Constant-time compare to avoid a timing side-channel on the shared secret.
+      if (!signature) return false;
+      const a = Buffer.from(signature);
+      const b = Buffer.from(secretHash);
+      return a.length === b.length && crypto.timingSafeEqual(a, b);
     },
 
     parseWebhook(body: unknown): WebhookEvent | null {
