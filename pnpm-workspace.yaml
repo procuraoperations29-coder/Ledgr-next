@@ -1,0 +1,4 @@
+# Marks ledgr-next as its own pnpm workspace root so `pnpm install` doesn't
+# walk up and attach to an unrelated parent workspace. This project is a single
+# package (no sub-packages), so the list is intentionally empty.
+packages: []

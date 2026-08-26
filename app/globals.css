@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Ledgr design tokens — a modern fintech palette.
+ * Primary = emerald (money / growth). Ink = deep slate for type.
+ * Surfaces are soft off-white with subtle borders and generous rounding.
+ * Dark mode ships from day one via the `.dark` class.
+ */
+@layer base {
+  :root {
+    --background: 150 20% 99%;
+    --foreground: 200 18% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 200 18% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 18% 12%;
+
+    /* Emerald primary */
+    --primary: 160 84% 30%;
+    --primary-foreground: 150 40% 98%;
+
+    --secondary: 200 16% 96%;
+    --secondary-foreground: 200 18% 20%;
+
+    --muted: 200 16% 96%;
+    --muted-foreground: 200 10% 42%;
+
+    --accent: 158 64% 94%;
+    --accent-foreground: 160 84% 24%;
+
+    --success: 158 64% 40%;
+    --success-foreground: 150 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 40 60% 12%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 16% 90%;
+    --input: 200 16% 90%;
+    --ring: 160 84% 30%;
+
+    --radius: 0.9rem;
+
+    /* Chart series */
+    --chart-1: 160 84% 34%;
+    --chart-2: 200 80% 45%;
+    --chart-3: 38 92% 52%;
+    --chart-4: 280 55% 55%;
+    --chart-5: 0 72% 55%;
+  }
+
+  .dark {
+    --background: 200 24% 8%;
+    --foreground: 150 20% 96%;
+
+    --card: 200 22% 11%;
+    --card-foreground: 150 20% 96%;
+
+    --popover: 200 22% 11%;
+    --popover-foreground: 150 20% 96%;
+
+    --primary: 158 64% 45%;
+    --primary-foreground: 200 24% 8%;
+
+    --secondary: 200 18% 16%;
+    --secondary-foreground: 150 20% 92%;
+
+    --muted: 200 18% 16%;
+    --muted-foreground: 200 10% 62%;
+
+    --accent: 160 40% 18%;
+    --accent-foreground: 158 64% 70%;
+
+    --success: 158 64% 48%;
+    --success-foreground: 200 24% 8%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 40 60% 10%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 16% 20%;
+    --input: 200 16% 22%;
+    --ring: 158 64% 45%;
+
+    --chart-1: 158 64% 50%;
+    --chart-2: 200 80% 60%;
+    --chart-3: 38 92% 58%;
+    --chart-4: 280 55% 65%;
+    --chart-5: 0 72% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Tabular figures for money everywhere */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
