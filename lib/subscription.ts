@@ -19,6 +19,24 @@ export interface Subscription {
   trialDaysLeft: number | null;
 }
 
+/** Normalise the `features` value to a string[] no matter how it's stored
+ *  (jsonb array, a JSON string, null, or anything unexpected). Prevents the
+ *  billing page from throwing on a malformed row. */
+function normFeatures(f: unknown): string[] {
+  if (Array.isArray(f)) return f.filter((x): x is string => typeof x === 'string');
+  if (typeof f === 'string') {
+    try {
+      const parsed = JSON.parse(f);
+      return Array.isArray(parsed)
+        ? parsed.filter((x): x is string => typeof x === 'string')
+        : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 export async function getStandardPlan(): Promise<Plan | null> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -26,7 +44,8 @@ export async function getStandardPlan(): Promise<Plan | null> {
     .select('id, code, name, price_kobo, interval, features')
     .eq('code', 'standard')
     .maybeSingle();
-  return (data as Plan) ?? null;
+  if (!data) return null;
+  return { ...(data as Plan), features: normFeatures((data as any).features) };
 }
 
 export async function getSubscription(orgId: string): Promise<Subscription | null> {
@@ -38,7 +57,11 @@ export async function getSubscription(orgId: string): Promise<Subscription | nul
     .maybeSingle();
   if (!data) return null;
 
-  const plan = (data as any).plans as Plan | null;
+  const rawPlan = (data as any).plans;
+  const planObj = Array.isArray(rawPlan) ? rawPlan[0] : rawPlan;
+  const plan: Plan | null = planObj
+    ? { ...(planObj as Plan), features: normFeatures(planObj.features) }
+    : null;
   let trialDaysLeft: number | null = null;
   if ((data as any).trial_ends_at) {
     const ms = new Date((data as any).trial_ends_at).getTime() - Date.now();
