@@ -1,5 +1,3 @@
-import Link from 'next/link';
-import { Plus } from 'lucide-react';
 import { requireSession } from '@/lib/auth/session';
 import { isPlatformAdmin } from '@/lib/admin/guard';
 import { getUnreadCount } from '@/lib/notify';
@@ -7,7 +5,6 @@ import { AppSidebar } from '@/components/app-shell/app-sidebar';
 import { AppMobileNav } from '@/components/app-shell/app-mobile-nav';
 import { UserMenu } from '@/components/app-shell/user-menu';
 import { NotificationBell } from '@/components/app-shell/notification-bell';
-import { Button } from '@/components/ui/button';
 
 export default async function AppLayout({
   children,
@@ -34,11 +31,6 @@ export default async function AppLayout({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link href="/transactions/new">
-                <Plus className="size-4" /> Record Transaction
-              </Link>
-            </Button>
             <NotificationBell count={unread} />
             <UserMenu
               name={session.fullName}
