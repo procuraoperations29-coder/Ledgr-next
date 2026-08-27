@@ -35,5 +35,5 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Inventory', href: '/inventory', icon: Package, ready: true },
   { label: 'Billing & Plan', href: '/billing', icon: CreditCard, ready: true },
   { label: 'Support', href: '/support', icon: LifeBuoy, ready: true },
-  { label: 'Settings', href: '/settings', icon: Settings, ready: false },
+  { label: 'Settings', href: '/settings', icon: Settings, ready: true },
 ];
