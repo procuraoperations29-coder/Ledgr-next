@@ -20,8 +20,7 @@ export interface Subscription {
 }
 
 /** Normalise the `features` value to a string[] no matter how it's stored
- *  (jsonb array, a JSON string, null, or anything unexpected). Prevents the
- *  billing page from throwing on a malformed row. */
+ *  (jsonb array, a JSON string, null, or anything unexpected). */
 function normFeatures(f: unknown): string[] {
   if (Array.isArray(f)) return f.filter((x): x is string => typeof x === 'string');
   if (typeof f === 'string') {
@@ -37,43 +36,58 @@ function normFeatures(f: unknown): string[] {
   return [];
 }
 
+/** Never throws — returns null on any error so the billing page can't crash. */
 export async function getStandardPlan(): Promise<Plan | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('plans')
-    .select('id, code, name, price_kobo, interval, features')
-    .eq('code', 'standard')
-    .maybeSingle();
-  if (!data) return null;
-  return { ...(data as Plan), features: normFeatures((data as any).features) };
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('plans')
+      .select('id, code, name, price_kobo, interval, features')
+      .eq('code', 'standard')
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    return { ...(data as Plan), features: normFeatures((data as any).features) };
+  } catch {
+    return null;
+  }
 }
 
+/** Never throws — returns null on any error. */
 export async function getSubscription(orgId: string): Promise<Subscription | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('subscriptions')
-    .select('id, status, trial_ends_at, current_period_end, plans(id, code, name, price_kobo, interval, features)')
-    .eq('organization_id', orgId)
-    .maybeSingle();
-  if (!data) return null;
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select(
+        'id, status, trial_ends_at, current_period_end, plans(id, code, name, price_kobo, interval, features)'
+      )
+      .eq('organization_id', orgId)
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
 
-  const rawPlan = (data as any).plans;
-  const planObj = Array.isArray(rawPlan) ? rawPlan[0] : rawPlan;
-  const plan: Plan | null = planObj
-    ? { ...(planObj as Plan), features: normFeatures(planObj.features) }
-    : null;
-  let trialDaysLeft: number | null = null;
-  if ((data as any).trial_ends_at) {
-    const ms = new Date((data as any).trial_ends_at).getTime() - Date.now();
-    trialDaysLeft = Math.max(0, Math.ceil(ms / 86400000));
+    const rawPlan = (data as any).plans;
+    const planObj = Array.isArray(rawPlan) ? rawPlan[0] : rawPlan;
+    const plan: Plan | null = planObj
+      ? { ...(planObj as Plan), features: normFeatures(planObj.features) }
+      : null;
+
+    let trialDaysLeft: number | null = null;
+    if ((data as any).trial_ends_at) {
+      const ms = new Date((data as any).trial_ends_at).getTime() - Date.now();
+      trialDaysLeft = Math.max(0, Math.ceil(ms / 86400000));
+    }
+
+    return {
+      id: (data as any).id,
+      status: (data as any).status,
+      trial_ends_at: (data as any).trial_ends_at,
+      current_period_end: (data as any).current_period_end,
+      plan,
+      trialDaysLeft,
+    };
+  } catch {
+    return null;
   }
-
-  return {
-    id: (data as any).id,
-    status: (data as any).status,
-    trial_ends_at: (data as any).trial_ends_at,
-    current_period_end: (data as any).current_period_end,
-    plan,
-    trialDaysLeft,
-  };
 }
