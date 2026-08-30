@@ -3,19 +3,25 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NAV_ITEMS } from '@/lib/nav';
+import { LogoMark } from '@/components/brand/logo';
 import { cn } from '@/lib/utils';
 
-export function AppSidebar() {
+export function AppSidebar({ logoUrl }: { logoUrl?: string | null }) {
   const pathname = usePathname();
 
   return (
     <aside className="hidden w-64 shrink-0 border-r border-border bg-card lg:flex lg:flex-col">
       <div className="flex h-16 items-center border-b border-border px-6">
         <Link href="/dashboard" className="inline-flex items-center gap-2 font-semibold">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-            ₦
-          </span>
-          Ledgr
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="Logo" className="size-8 rounded-lg object-contain" />
+          ) : (
+            <>
+              <LogoMark className="size-8" />
+              Ledgr
+            </>
+          )}
         </Link>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">

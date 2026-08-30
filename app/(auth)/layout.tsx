@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LogoMark } from '@/components/brand/logo';
 
 export default function AuthLayout({
   children,
@@ -12,9 +13,7 @@ export default function AuthLayout({
           href="/"
           className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight"
         >
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-            ₦
-          </span>
+          <LogoMark className="size-8" />
           Ledgr
         </Link>
       </header>

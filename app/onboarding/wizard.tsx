@@ -21,6 +21,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/format';
+import { LogoMark } from '@/components/brand/logo';
 
 const BUSINESS_TYPES = [
   'Sole Proprietor', 'Limited Company', 'Partnership', 'NGO / Non-profit', 'Other',
@@ -121,9 +122,7 @@ export function OnboardingWizard() {
     <div className="flex min-h-dvh flex-col bg-secondary/40">
       <header className="container flex h-16 items-center justify-between">
         <span className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-            ₦
-          </span>
+          <LogoMark className="size-8" />
           Ledgr
         </span>
         <span className="text-sm text-muted-foreground">

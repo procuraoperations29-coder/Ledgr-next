@@ -10,15 +10,14 @@ import {
   Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LogoMark } from '@/components/brand/logo';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 function Logo() {
   return (
     <span className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight">
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-        ₦
-      </span>
+      <LogoMark className="size-8" />
       Ledgr
     </span>
   );

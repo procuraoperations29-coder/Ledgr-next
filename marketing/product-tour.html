@@ -1,0 +1,559 @@
+<title>Ledgr Product Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap">
+
+<style>
+  :root{
+    /* Committed dark "stage" aesthetic — all colors painted explicitly. */
+    --stage-0:#08150f; --stage-1:#0c211a; --stage-edge:#05100b;
+    --mist:#e8f2ec; --mist-dim:#9fb4ab; --mist-faint:#6f857c;
+    --glow:#10b981; --glow-soft:rgba(16,185,129,.16);
+    --line:rgba(255,255,255,.10);
+
+    /* Ledgr app (light UI) — the product's real palette */
+    --app-bg:#f5f9f7; --card:#ffffff; --ink:#0c1a16; --sub:#5f716b;
+    --border:#e4ede8; --primary:#0b7d5a; --primary-ink:#075c43;
+    --primary-soft:#e7f5ef; --accent-soft:#eef7f2;
+    --success:#16a34a; --success-soft:#e7f6ec;
+    --warning:#b4791f; --warning-soft:#f9f0df;
+    --slate-soft:#eef2f0;
+
+    --sans:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --display:"Bricolage Grotesque","Inter",sans-serif;
+    --radius:16px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:var(--sans);
+    background:
+      radial-gradient(1200px 700px at 50% -10%, var(--glow-soft), transparent 60%),
+      radial-gradient(900px 600px at 85% 110%, rgba(16,185,129,.10), transparent 55%),
+      linear-gradient(160deg, var(--stage-1), var(--stage-0) 55%, var(--stage-edge));
+    color:var(--mist);
+    min-height:100dvh;
+    display:flex; align-items:center; justify-content:center;
+    padding:clamp(14px,3vw,40px);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .tabular{font-variant-numeric:tabular-nums}
+
+  /* ---------- Stage frame ---------- */
+  .tour{ width:min(1080px,100%); }
+  .brandbar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; margin-bottom:clamp(14px,2.4vw,22px);
+  }
+  .brand{ display:flex; align-items:center; gap:11px; }
+  .brand .mark{
+    width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    background:linear-gradient(150deg,#12b886,#0b7d5a);
+    color:#04140d;font-weight:800;font-size:19px;font-family:var(--display);
+    box-shadow:0 6px 18px -6px rgba(16,185,129,.6);
+  }
+  .brand .name{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.01em;color:#fff}
+  .brand .name b{color:var(--glow);font-weight:700}
+  .tagline{font-family:var(--display);font-weight:500;font-size:13.5px;color:var(--mist-dim);letter-spacing:.01em}
+  @media(max-width:640px){ .tagline{display:none} }
+
+  /* ---------- Browser-framed app window ---------- */
+  .frame{
+    position:relative; border-radius:var(--radius);
+    background:var(--card);
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
+    overflow:hidden;
+  }
+  .chrome{
+    display:flex;align-items:center;gap:14px;
+    padding:11px 16px;background:#0f1a16;border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .dots{display:flex;gap:7px}
+  .dots i{width:11px;height:11px;border-radius:50%;display:block}
+  .dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840}
+  .urlbar{
+    flex:1;background:#1b2723;border-radius:8px;color:#b9c9c2;font-size:12.5px;
+    padding:6px 12px;display:flex;align-items:center;gap:7px;font-family:var(--sans);max-width:420px;
+  }
+  .urlbar .lock{color:#4ade80;font-size:11px}
+  .urlbar b{color:#eaf3ef;font-weight:600}
+
+  /* app viewport */
+  .viewport{position:relative;height:min(62vh,560px);min-height:430px;background:var(--app-bg);overflow:hidden}
+
+  /* app shell */
+  .app{display:grid;grid-template-columns:210px 1fr;height:100%;color:var(--ink)}
+  .side{background:var(--card);border-right:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:3px}
+  .side .logo{display:flex;align-items:center;gap:9px;padding:6px 8px 14px;font-weight:700;font-size:16px}
+  .side .logo .m{width:26px;height:26px;border-radius:8px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+  .nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:var(--sub);font-size:13.5px;font-weight:500}
+  .nav .ic{width:15px;height:15px;border-radius:4px;border:1.6px solid currentColor;opacity:.65}
+  .nav.on{background:var(--primary-soft);color:var(--primary-ink);font-weight:600}
+  .nav.on .ic{opacity:1}
+  @media(max-width:720px){ .app{grid-template-columns:1fr} .side{display:none} }
+
+  .main-wrap{overflow:hidden;position:relative}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.7)}
+  .topbar .biz{font-weight:600;font-size:14px}
+  .topbar .biz span{display:block;font-size:11.5px;color:var(--sub);font-weight:500}
+  .topbar .right{display:flex;align-items:center;gap:12px}
+  .topbar .bell{width:17px;height:17px;border:1.7px solid var(--sub);border-radius:6px 6px 3px 3px;opacity:.6}
+  .topbar .av{width:30px;height:30px;border-radius:50%;background:var(--primary-soft);color:var(--primary-ink);display:grid;place-items:center;font-size:12px;font-weight:700}
+  .content{padding:20px 22px;overflow:auto;height:calc(100% - 52px)}
+  .h1{font-size:20px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .h1 + .lede{color:var(--sub);font-size:13px;margin:2px 0 0}
+
+  /* reusable app bits */
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+  @media(max-width:720px){ .grid4{grid-template-columns:repeat(2,1fr)} }
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px}
+  .stat .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;margin-bottom:10px;font-size:16px}
+  .stat .lbl{font-size:11px;color:var(--sub)}
+  .stat .val{font-size:20px;font-weight:700;margin-top:3px;letter-spacing:-.01em}
+  .ic-primary{background:var(--primary-soft);color:var(--primary-ink)}
+  .ic-success{background:var(--success-soft);color:var(--success)}
+  .ic-slate{background:var(--slate-soft);color:var(--sub)}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px}
+  .card.mt{margin-top:14px}
+  .card h3{margin:0 0 4px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .spark{color:var(--primary)}
+  .insights{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;margin-top:10px}
+  @media(max-width:720px){ .insights{grid-template-columns:1fr} }
+  .insights li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--sub);list-style:none}
+  .insights li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--primary);margin-top:6px;flex:none}
+  .insights.plain{margin:0;padding:0}
+  .headline-line{font-size:14px;margin:2px 0 0;color:var(--ink)}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:720px){ .two{grid-template-columns:1fr} }
+  .owe{display:flex;align-items:center;gap:12px}
+  .owe .b{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:16px}
+  .owe .t{font-size:12px;color:var(--sub)}
+  .owe .n{font-size:16px;font-weight:700}
+
+  .rows{margin-top:4px}
+  .r{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13px;border-bottom:1px solid var(--border)}
+  .r:last-child{border-bottom:0}
+  .r .k{color:var(--sub)} .r .v{font-weight:600}
+  .r.strong{border-top:1.5px solid var(--border);border-bottom:0;margin-top:4px;padding-top:9px;font-weight:700}
+  .r.strong .k{color:var(--ink)}
+  .money-pos{color:var(--success)}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px}
+  .badge.ok{background:var(--success-soft);color:var(--success)}
+  .badge.warn{background:var(--warning-soft);color:var(--warning)}
+  .badge.primary{background:var(--primary-soft);color:var(--primary-ink)}
+
+  /* record-transaction chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .chip{border:1px solid var(--border);background:var(--card);border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:500;color:var(--sub)}
+  .chip.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary-ink);font-weight:600}
+  .field{margin-top:12px}
+  .field label{font-size:11.5px;color:var(--sub);display:block;margin-bottom:5px;font-weight:500}
+  .field .inp{border:1px solid var(--border);background:var(--card);border-radius:9px;padding:10px 12px;font-size:14px;display:flex;align-items:center;gap:6px}
+  .field .inp.big{font-size:18px;font-weight:600}
+  .field .inp .cur{color:var(--sub)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .btn{margin-top:16px;background:var(--primary);color:#fff;border:0;border-radius:10px;padding:12px;font-size:14px;font-weight:600;width:100%;text-align:center}
+
+  /* invoice */
+  .inv-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .inv-head .num{font-size:20px;font-weight:700}
+  .lines{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  .lines th{text-align:left;color:var(--sub);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px 0;border-bottom:1px solid var(--border)}
+  .lines td{padding:11px 0;border-bottom:1px solid var(--border)}
+  .lines .rt{text-align:right}
+
+  /* management account exec cards */
+  .exec{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  @media(max-width:720px){ .exec{grid-template-columns:repeat(2,1fr)} }
+  .exec .e{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px}
+  .exec .e .l{font-size:10.5px;color:var(--sub)} .exec .e .v{font-size:16px;font-weight:700;margin-top:2px}
+  .exec .e small{color:var(--success);font-size:10.5px;font-weight:600}
+
+  /* ---------- caption + controls ---------- */
+  .caption{
+    min-height:58px;margin-top:clamp(14px,2.2vw,20px);
+    display:flex;align-items:flex-start;gap:14px;
+  }
+  .caption .kicker{
+    font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--glow);white-space:nowrap;padding-top:4px;
+  }
+  .caption p{
+    margin:0;font-family:var(--display);font-weight:500;
+    font-size:clamp(15px,2.1vw,19px);line-height:1.5;color:var(--mist);
+    text-wrap:balance;max-width:70ch;
+  }
+
+  .controls{display:flex;align-items:center;gap:14px;margin-top:16px}
+  .track{flex:1;display:flex;gap:6px}
+  .seg{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.13);overflow:hidden;cursor:pointer}
+  .seg .fill{display:block;height:100%;width:0;background:var(--glow);border-radius:99px}
+  .seg.done .fill{width:100%}
+  .cbtn{
+    width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
+    background:rgba(255,255,255,.05);color:var(--mist);display:grid;place-items:center;cursor:pointer;
+    transition:background .15s,border-color .15s;
+  }
+  .cbtn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25)}
+  .cbtn:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
+  .cbtn svg{width:16px;height:16px;fill:currentColor}
+  .count{font-size:12px;color:var(--mist-faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* ---------- overlay cards (title / mobile / cta) ---------- */
+  .overlay{position:absolute;inset:0;display:none;place-items:center;text-align:center;padding:24px;
+    background:radial-gradient(700px 400px at 50% 40%, #103127, #0a1c16 70%);color:var(--mist)}
+  .overlay.show{display:grid}
+  .overlay .big{font-family:var(--display);font-weight:800;letter-spacing:-.02em;line-height:1.05;
+    font-size:clamp(30px,6vw,58px);color:#fff;margin:0;text-wrap:balance}
+  .overlay .big em{color:var(--glow);font-style:normal}
+  .overlay .sub{font-family:var(--display);font-weight:500;color:var(--mist-dim);font-size:clamp(14px,2.4vw,18px);margin:16px 0 0;max-width:44ch}
+  .overlay .lgmark{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;margin:0 auto 22px;
+    background:linear-gradient(150deg,#14c58f,#0b7d5a);color:#04140d;font-family:var(--display);font-weight:800;font-size:34px;
+    box-shadow:0 18px 50px -14px rgba(16,185,129,.65)}
+  .pill{display:inline-flex;align-items:center;gap:8px;margin-top:26px;background:var(--glow);color:#04140d;
+    font-family:var(--display);font-weight:700;font-size:16px;padding:13px 24px;border-radius:999px;box-shadow:0 14px 40px -12px rgba(16,185,129,.7)}
+  .pillnote{margin-top:14px;color:var(--mist-faint);font-size:13px}
+
+  /* phone frame */
+  .phone{width:270px;max-width:76vw;border-radius:34px;background:#0c1a16;padding:11px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.08)}
+  .phone .screen{background:var(--app-bg);border-radius:24px;overflow:hidden;height:min(50vh,470px);color:var(--ink);display:flex;flex-direction:column}
+  .phone .pt{padding:14px 15px 8px}
+  .phone .pt .biz{font-weight:700;font-size:15px}
+  .phone .pcards{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:4px 15px}
+  .phone .pc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px}
+  .phone .pc .l{font-size:10px;color:var(--sub)} .phone .pc .v{font-size:15px;font-weight:700;margin-top:3px}
+  .phone .pnav{margin-top:auto;display:flex;justify-content:space-around;padding:11px 6px;border-top:1px solid var(--border);background:var(--card);position:relative}
+  .phone .pnav i{width:20px;height:20px;border-radius:6px;border:2px solid var(--sub);opacity:.5}
+  .phone .pnav i.on{border-color:var(--primary);opacity:1}
+  .phone .fab{position:absolute;top:-22px;right:18px;width:46px;height:46px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-size:24px;box-shadow:0 10px 24px -6px rgba(11,125,90,.7)}
+
+  @media (prefers-reduced-motion: no-preference){
+    .scene-content{animation:fade .6s ease}
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  }
+</style>
+
+<div class="tour">
+  <div class="brandbar">
+    <div class="brand">
+      <div class="mark">₦</div>
+      <div class="name">Ledgr</div>
+    </div>
+    <div class="tagline">Know Your Numbers. Run Your Business.</div>
+  </div>
+
+  <div class="frame">
+    <div class="chrome">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="urlbar"><span class="lock">●</span>ledgr.com.ng<b id="url">/dashboard</b></div>
+    </div>
+
+    <div class="viewport">
+      <!-- App shell (persistent) -->
+      <div class="app" id="appshell">
+        <aside class="side">
+          <div class="logo"><span class="m">₦</span> Ledgr</div>
+          <div class="nav" data-nav="dashboard"><span class="ic"></span> Dashboard</div>
+          <div class="nav" data-nav="transactions"><span class="ic"></span> Transactions</div>
+          <div class="nav" data-nav="sales"><span class="ic"></span> Sales &amp; Invoices</div>
+          <div class="nav" data-nav="reports"><span class="ic"></span> Reports</div>
+          <div class="nav" data-nav="accounts"><span class="ic"></span> Chart of Accounts</div>
+          <div class="nav" data-nav="bank"><span class="ic"></span> Bank &amp; Cash</div>
+        </aside>
+        <div class="main-wrap">
+          <div class="topbar">
+            <div class="biz">Tayo Foods Limited <span>Owner</span></div>
+            <div class="right"><span class="bell"></span><span class="av">DO</span></div>
+          </div>
+          <div class="content" id="appmain"></div>
+        </div>
+      </div>
+
+      <!-- Overlays -->
+      <div class="overlay" id="ov-title">
+        <div>
+          <div class="lgmark">₦</div>
+          <h1 class="big">Know Your Numbers.<br><em>Run Your Business.</em></h1>
+          <p class="sub">A 60-second look at how Ledgr turns everyday transactions into professional financial reports.</p>
+        </div>
+      </div>
+
+      <div class="overlay" id="ov-mobile">
+        <div class="phone">
+          <div class="screen">
+            <div class="pt"><div class="biz">Tayo Foods Limited</div></div>
+            <div class="pcards">
+              <div class="pc"><div class="l">Cash Balance</div><div class="v tabular">₦3.7m</div></div>
+              <div class="pc"><div class="l">Net Profit · Aug</div><div class="v tabular money-pos">₦800k</div></div>
+              <div class="pc"><div class="l">Customers owe you</div><div class="v tabular">₦337.5k</div></div>
+              <div class="pc"><div class="l">Revenue · Aug</div><div class="v tabular">₦950k</div></div>
+            </div>
+            <div class="pnav"><div class="fab">+</div><i class="on"></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay" id="ov-cta">
+        <div>
+          <div class="lgmark">₦</div>
+          <h1 class="big">Start free today.</h1>
+          <p class="sub">Everything a growing business needs — P&amp;L, balance sheet, cash flow, invoicing and management accounts.</p>
+          <div class="pill">Start free → ledgr.com.ng</div>
+          <div class="pillnote">₦3,000/month · everything included · no card required</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="kicker" id="kicker">01</span>
+    <p id="caption">—</p>
+  </div>
+
+  <div class="controls">
+    <button class="cbtn" id="prev" aria-label="Previous scene"><svg viewBox="0 0 24 24"><path d="M15.5 5 8 12l7.5 7V5z"/></svg></button>
+    <button class="cbtn" id="play" aria-label="Pause"><svg id="playicon" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+    <button class="cbtn" id="next" aria-label="Next scene"><svg viewBox="0 0 24 24"><path d="M8.5 5 16 12l-7.5 7V5z"/></svg></button>
+    <div class="track" id="track"></div>
+    <div class="count" id="count">01 / 09</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var money = {
+    dashboard: `
+      <h1 class="h1">Tayo Foods Limited</h1>
+      <p class="lede">Here's how your business is doing.</p>
+      <div class="grid4">
+        <div class="stat"><div class="ic ic-primary">▮</div><div class="lbl">Cash Balance</div><div class="val tabular">₦3,700,000.00</div></div>
+        <div class="stat"><div class="ic ic-success">↗</div><div class="lbl">Revenue · August</div><div class="val tabular">₦950,000.00</div></div>
+        <div class="stat"><div class="ic ic-slate">↘</div><div class="lbl">Expenses · August</div><div class="val tabular">₦150,000.00</div></div>
+        <div class="stat"><div class="ic ic-success">◆</div><div class="lbl">Net Profit · August</div><div class="val tabular money-pos">₦800,000.00</div></div>
+      </div>
+      <div class="card mt">
+        <h3><span class="spark">✦</span> How your business is doing</h3>
+        <p class="headline-line">Your business generated <b>₦950.0k</b> in revenue and made <b>₦800.0k</b> in profit this period.</p>
+        <ul class="insights">
+          <li>Revenue is up from nothing last period.</li>
+          <li>Your largest cost is Rent at ₦150.0k.</li>
+          <li>Net profit margin is 84%.</li>
+          <li>Customers currently owe you ₦337.5k.</li>
+        </ul>
+      </div>
+      <div class="two">
+        <div class="card"><div class="owe"><div class="b ic-success">↙</div><div><div class="t">Customers owe you</div><div class="n tabular">₦337,500.00</div></div></div></div>
+        <div class="card"><div class="owe"><div class="b ic-slate">↗</div><div><div class="t">You owe suppliers</div><div class="n tabular">₦0.00</div></div></div></div>
+      </div>`,
+
+    record: `
+      <h1 class="h1">Record a transaction</h1>
+      <p class="lede">Enter it in plain language — Ledgr does the accounting for you.</p>
+      <div class="chips">
+        <span class="chip on">Money Received</span><span class="chip">Money Spent</span>
+        <span class="chip">Sale</span><span class="chip">Customer Payment</span>
+        <span class="chip">Transfer</span><span class="chip">Owner Investment</span>
+      </div>
+      <div class="card mt">
+        <div class="grid2">
+          <div class="field"><label>Amount</label><div class="inp big"><span class="cur">₦</span> 450,000.00</div></div>
+          <div class="field"><label>Date</label><div class="inp">26 August 2026</div></div>
+        </div>
+        <div class="grid2" style="margin-top:12px">
+          <div class="field"><label>Received into</label><div class="inp">GTBank</div></div>
+          <div class="field"><label>What was it for?</label><div class="inp">Sales</div></div>
+        </div>
+        <div class="field"><label>Description</label><div class="inp">Catering event payment</div></div>
+        <div class="btn">Save transaction</div>
+      </div>`,
+
+    invoice: `
+      <div class="inv-head"><span class="num">INV-0001</span><span class="badge warn">Part-paid</span>
+        <span class="lede" style="margin-left:auto">ABC Limited · 7.5% VAT</span></div>
+      <div class="card mt" style="padding:0 16px">
+        <table class="lines">
+          <thead><tr><th>Description</th><th class="rt">Qty</th><th class="rt">Unit</th><th class="rt">Amount</th></tr></thead>
+          <tbody><tr><td>Catering — corporate lunch (50 guests)</td><td class="rt tabular">1</td><td class="rt tabular">₦500,000.00</td><td class="rt tabular">₦500,000.00</td></tr></tbody>
+        </table>
+      </div>
+      <div class="card mt">
+        <div class="rows">
+          <div class="r"><span class="k">Subtotal</span><span class="v tabular">₦500,000.00</span></div>
+          <div class="r"><span class="k">Tax (VAT 7.5%)</span><span class="v tabular">₦37,500.00</span></div>
+          <div class="r strong"><span class="k">Total</span><span class="v tabular">₦537,500.00</span></div>
+          <div class="r"><span class="k">Paid</span><span class="v tabular">₦200,000.00</span></div>
+          <div class="r"><span class="k" style="color:var(--primary-ink);font-weight:600">Outstanding</span><span class="v tabular" style="color:var(--primary-ink)">₦337,500.00</span></div>
+        </div>
+      </div>`,
+
+    pl: `
+      <h1 class="h1">Profit &amp; Loss</h1>
+      <p class="lede">August 2026 · every figure from your ledger.</p>
+      <div class="card mt">
+        <div class="rows">
+          <div class="r"><span class="k">Revenue</span><span class="v tabular">₦950,000.00</span></div>
+          <div class="r"><span class="k">Cost of sales</span><span class="v tabular">₦0.00</span></div>
+          <div class="r strong"><span class="k">Gross profit</span><span class="v tabular">₦950,000.00</span></div>
+          <div class="r"><span class="k">Operating expenses — Rent</span><span class="v tabular">₦150,000.00</span></div>
+          <div class="r strong"><span class="k">Operating profit</span><span class="v tabular">₦800,000.00</span></div>
+          <div class="r strong"><span class="k">Net profit</span><span class="v tabular money-pos">₦800,000.00</span></div>
+        </div>
+      </div>`,
+
+    balance: `
+      <div class="inv-head"><h1 class="h1">Balance Sheet</h1><span class="badge ok" style="margin-left:6px">✓ Balanced</span></div>
+      <p class="lede">Assets = Liabilities + Equity.</p>
+      <div class="two">
+        <div class="card"><h3>Assets</h3><div class="rows">
+          <div class="r"><span class="k">Cash</span><span class="v tabular">₦400,000</span></div>
+          <div class="r"><span class="k">GTBank</span><span class="v tabular">₦3,300,000</span></div>
+          <div class="r"><span class="k">Money customers owe you</span><span class="v tabular">₦337,500</span></div>
+          <div class="r strong"><span class="k">Total assets</span><span class="v tabular">₦4,037,500</span></div>
+        </div></div>
+        <div class="card"><h3>Liabilities &amp; Equity</h3><div class="rows">
+          <div class="r"><span class="k">Taxes you owe</span><span class="v tabular">₦37,500</span></div>
+          <div class="r"><span class="k">Owner's investment</span><span class="v tabular">₦3,200,000</span></div>
+          <div class="r"><span class="k">Retained earnings</span><span class="v tabular">₦800,000</span></div>
+          <div class="r strong"><span class="k">Liabilities + Equity</span><span class="v tabular">₦4,037,500</span></div>
+        </div></div>
+      </div>`,
+
+    mgmt: `
+      <div class="inv-head"><h1 class="h1">Management Account</h1><span class="badge primary" style="margin-left:6px">↓ PDF</span>
+        <span class="lede" style="margin-left:auto">August 2026 · prepared by Ledgr</span></div>
+      <div class="exec">
+        <div class="e"><div class="l">Revenue</div><div class="v tabular">₦950,000</div></div>
+        <div class="e"><div class="l">Gross Profit</div><div class="v tabular">₦950,000</div><small>100% margin</small></div>
+        <div class="e"><div class="l">Net Profit</div><div class="v tabular">₦800,000</div><small>84% margin</small></div>
+        <div class="e"><div class="l">Cash</div><div class="v tabular">₦3,700,000</div></div>
+      </div>
+      <div class="card mt">
+        <h3>Management commentary</h3>
+        <ul class="insights plain" style="grid-template-columns:1fr">
+          <li>Your business generated ₦950.0k in revenue and made ₦800.0k in profit this period.</li>
+          <li>Net profit margin is 84%. Your largest cost is Rent at ₦150.0k.</li>
+          <li>Customers currently owe you ₦337.5k. You have ₦3.7m in cash and bank.</li>
+        </ul>
+      </div>`
+  };
+
+  // scene = {kicker, url, nav, caption, main? | overlay?}
+  var scenes = [
+    {overlay:"ov-title", url:"", nav:"dashboard", kicker:"Ledgr",
+     caption:"Running a business, you really want to know four things: did I make money, where did it go, who owes me, and what do I owe?"},
+    {main:"dashboard", url:"/dashboard", nav:"dashboard", kicker:"Dashboard",
+     caption:"Ledgr answers all four the moment you open it — your cash, your profit, and a plain-English read on the month."},
+    {main:"record", url:"/transactions/new", nav:"transactions", kicker:"Record",
+     caption:"Recording money is this simple. Say what happened in plain language — Ledgr does the double-entry accounting for you, correctly, every time."},
+    {main:"invoice", url:"/sales/INV-0001", nav:"sales", kicker:"Invoices",
+     caption:"Send an invoice, add VAT, take a payment — and Ledgr tracks exactly who still owes you, and how much."},
+    {main:"pl", url:"/reports/profit-and-loss", nav:"reports", kicker:"Reports",
+     caption:"From those simple entries, Ledgr builds a real Profit & Loss — automatically."},
+    {main:"balance", url:"/reports/balance-sheet", nav:"reports", kicker:"Reports",
+     caption:"A Balance Sheet that always balances — assets equal liabilities plus equity, every figure tracing to the same ledger."},
+    {main:"mgmt", url:"/reports/management-account", nav:"reports", kicker:"Management",
+     caption:"And a board-ready Management Account — one click gives you a professional PDF for your bank, investors or partners."},
+    {overlay:"ov-mobile", url:"/dashboard", nav:"dashboard", kicker:"Mobile",
+     caption:"It all runs from your phone — so you can keep your books straight from anywhere, between customers."},
+    {overlay:"ov-cta", url:"", nav:"dashboard", kicker:"Start free",
+     caption:"Ledgr. Know your numbers, run your business — from ₦3,000 a month, everything included."}
+  ];
+
+  var SCENE_MS = 6000;
+  var i = 0, timer = null, playing = true, segStart = 0, raf = null;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var appmain = document.getElementById("appmain");
+  var urlEl = document.getElementById("url");
+  var capEl = document.getElementById("caption");
+  var kickEl = document.getElementById("kicker");
+  var countEl = document.getElementById("count");
+  var appshell = document.getElementById("appshell");
+  var overlays = ["ov-title","ov-mobile","ov-cta"].map(function(id){return document.getElementById(id)});
+  var navs = Array.prototype.slice.call(document.querySelectorAll(".nav"));
+
+  // build progress track
+  var track = document.getElementById("track");
+  var segs = scenes.map(function(_,idx){
+    var s = document.createElement("div"); s.className="seg";
+    var f = document.createElement("span"); f.className="fill"; s.appendChild(f);
+    s.addEventListener("click", function(){ go(idx); });
+    track.appendChild(s); return s;
+  });
+
+  function pad(n){ return (n<10?"0":"")+n; }
+
+  function render(){
+    var s = scenes[i];
+    // overlays
+    overlays.forEach(function(o){ o.classList.remove("show"); });
+    if(s.overlay){
+      appshell.style.visibility="hidden";
+      document.getElementById(s.overlay).classList.add("show");
+    } else {
+      appshell.style.visibility="visible";
+      appmain.innerHTML = '<div class="scene-content">'+ money[s.main] +'</div>';
+    }
+    urlEl.textContent = s.url;
+    capEl.textContent = s.caption;
+    kickEl.textContent = s.kicker;
+    countEl.textContent = pad(i+1)+" / "+pad(scenes.length);
+    navs.forEach(function(n){ n.classList.toggle("on", n.dataset.nav===s.nav); });
+    // progress segs
+    segs.forEach(function(sg,idx){
+      sg.classList.toggle("done", idx<i);
+      var f = sg.querySelector(".fill");
+      f.style.transition="none"; f.style.width = idx<i ? "100%" : "0%";
+    });
+    // animate current seg fill
+    if(!reduce && playing){
+      var cur = segs[i].querySelector(".fill");
+      requestAnimationFrame(function(){
+        cur.style.transition="width "+SCENE_MS+"ms linear"; cur.style.width="100%";
+      });
+    } else if(reduce){
+      segs[i].querySelector(".fill").style.width="100%";
+    }
+  }
+
+  function schedule(){
+    clearTimeout(timer);
+    if(!playing || reduce) return;
+    timer = setTimeout(function(){ go((i+1)%scenes.length); }, SCENE_MS);
+  }
+
+  function go(n){ i=(n+scenes.length)%scenes.length; render(); schedule(); }
+
+  function setPlay(p){
+    playing=p;
+    document.getElementById("playicon").innerHTML = p
+      ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>'
+      : '<path d="M8 5v14l11-7z"/>';
+    document.getElementById("play").setAttribute("aria-label", p?"Pause":"Play");
+    if(p){ render(); schedule(); } else { clearTimeout(timer);
+      // freeze current fill
+      var f=segs[i].querySelector(".fill"); var w=getComputedStyle(f).width;
+      f.style.transition="none"; f.style.width=w;
+    }
+  }
+
+  document.getElementById("next").addEventListener("click", function(){ go(i+1); });
+  document.getElementById("prev").addEventListener("click", function(){ go(i-1); });
+  document.getElementById("play").addEventListener("click", function(){ setPlay(!playing); });
+  document.addEventListener("keydown", function(e){
+    if(e.key==="ArrowRight"){ go(i+1); } else if(e.key==="ArrowLeft"){ go(i-1); }
+    else if(e.key===" "){ e.preventDefault(); setPlay(!playing); }
+  });
+
+  if(reduce) playing=false;
+  render();
+  schedule();
+  if(reduce) setPlay(false);
+})();
+</script>

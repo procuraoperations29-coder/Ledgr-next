@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { LayoutDashboard, Building2, LifeBuoy, ExternalLink } from 'lucide-react';
 import { requirePlatformAdmin } from '@/lib/admin/guard';
+import { LogoMark } from '@/components/brand/logo';
 
 export const metadata = { title: 'Ledgr Admin' };
 
@@ -23,9 +24,7 @@ export default async function AdminLayout({
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-6">
             <span className="inline-flex items-center gap-2 font-semibold">
-              <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
-                ₦
-              </span>
+              <LogoMark className="size-7" />
               Ledgr <span className="text-white/50">Admin</span>
             </span>
             <nav className="hidden items-center gap-1 sm:flex">
