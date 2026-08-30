@@ -13,7 +13,7 @@ export async function activateFromPayment(
 
   const { data: payment } = await svc
     .from('billing_payments')
-    .select('id, organization_id, status')
+    .select('id, organization_id, status, plan_id')
     .eq('provider', provider)
     .eq('provider_ref', reference)
     .maybeSingle();
@@ -30,14 +30,18 @@ export async function activateFromPayment(
   const periodEnd = new Date(now);
   periodEnd.setMonth(periodEnd.getMonth() + 1);
 
+  const subUpdate: Record<string, unknown> = {
+    status: 'active',
+    provider,
+    current_period_start: now.toISOString(),
+    current_period_end: periodEnd.toISOString(),
+    cancel_at_period_end: false,
+  };
+  // Switch the plan to whatever was paid for.
+  if ((payment as any).plan_id) subUpdate.plan_id = (payment as any).plan_id;
+
   await svc
     .from('subscriptions')
-    .update({
-      status: 'active',
-      provider,
-      current_period_start: now.toISOString(),
-      current_period_end: periodEnd.toISOString(),
-      cancel_at_period_end: false,
-    })
+    .update(subUpdate)
     .eq('organization_id', payment.organization_id);
 }

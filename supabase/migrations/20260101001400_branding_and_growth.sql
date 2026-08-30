@@ -6,6 +6,10 @@
 alter table public.organizations
   add column if not exists brand_color text;
 
+-- Which plan a payment was for (so activation can switch the subscription's plan).
+alter table public.billing_payments
+  add column if not exists plan_id uuid references public.plans(id);
+
 -- Second plan: Growth (₦7,000/mo) — more seats + custom branding.
 insert into public.plans (code, name, price_kobo, interval, max_users, features, sort)
 values (

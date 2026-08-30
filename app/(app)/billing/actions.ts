@@ -55,6 +55,7 @@ export async function startCheckoutAction(
     provider: provider.name,
     provider_ref: reference,
     amount_kobo: plan.price_kobo,
+    plan_id: plan.id,
     status: 'pending',
   });
 

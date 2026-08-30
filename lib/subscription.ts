@@ -53,6 +53,24 @@ export async function getStandardPlan(): Promise<Plan | null> {
   }
 }
 
+/** All active plans, cheapest first. Never throws. */
+export async function getPlans(): Promise<Plan[]> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('plans')
+      .select('id, code, name, price_kobo, interval, features')
+      .eq('is_active', true)
+      .order('sort', { ascending: true });
+    return (data ?? []).map((p) => ({
+      ...(p as Plan),
+      features: normFeatures((p as any).features),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 /** Never throws — returns null on any error. */
 export async function getSubscription(orgId: string): Promise<Subscription | null> {
   try {
