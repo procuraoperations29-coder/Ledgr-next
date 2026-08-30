@@ -7,6 +7,7 @@ export interface TicketRow {
   subject: string;
   category: string;
   status: string;
+  priority: string;
   created_at: string;
   organization_id: string;
   org_name?: string | null;
@@ -28,7 +29,7 @@ export async function getTickets(orgId: string): Promise<TicketRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from('support_tickets')
-    .select('id, subject, category, status, created_at, organization_id')
+    .select('id, subject, category, status, priority, created_at, organization_id')
     .eq('organization_id', orgId)
     .order('created_at', { ascending: false });
   return (data as TicketRow[]) ?? [];
@@ -53,13 +54,16 @@ export async function listAllTickets(status?: string): Promise<TicketRow[]> {
   const svc = createServiceRoleClient();
   let q = svc
     .from('support_tickets')
-    .select('id, subject, category, status, created_at, organization_id, organizations(name)')
+    .select('id, subject, category, status, priority, created_at, organization_id, organizations(name)')
+    // Priority tickets first ('priority' > 'normal'), then newest.
+    .order('priority', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(100);
   if (status && status !== 'all') q = q.eq('status', status);
   const { data } = await q;
   return ((data as any[]) ?? []).map((t) => ({
     id: t.id, subject: t.subject, category: t.category, status: t.status,
+    priority: t.priority ?? 'normal',
     created_at: t.created_at, organization_id: t.organization_id,
     org_name: t.organizations?.name ?? null,
   }));

@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { LifeBuoy } from 'lucide-react';
+import { LifeBuoy, Zap, ArrowRight } from 'lucide-react';
 import { getActiveMembership } from '@/lib/auth/session';
 import { getTickets } from '@/lib/support';
+import { getOrgPlan, planHasPrioritySupport } from '@/lib/plan';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatDate } from '@/lib/format';
@@ -15,7 +16,11 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'success' | 'warn
 
 export default async function SupportPage() {
   const membership = await getActiveMembership();
-  const tickets = membership ? await getTickets(membership.organizationId) : [];
+  const [tickets, plan] = await Promise.all([
+    membership ? getTickets(membership.organizationId) : Promise.resolve([]),
+    membership ? getOrgPlan(membership.organizationId) : Promise.resolve(null),
+  ]);
+  const isPriority = plan ? planHasPrioritySupport(plan) : false;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -26,6 +31,34 @@ export default async function SupportPage() {
         </div>
         <NewTicketDialog />
       </div>
+
+      {isPriority ? (
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <Zap className="mt-0.5 size-5 shrink-0 text-primary" />
+          <div className="text-sm">
+            <p className="font-medium">Priority support is on</p>
+            <p className="text-muted-foreground">
+              As a Growth business, your tickets jump to the front of our queue for the fastest response.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <Link
+          href="/billing"
+          className="mb-6 flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40"
+        >
+          <div className="flex items-start gap-3">
+            <Zap className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+            <div className="text-sm">
+              <p className="font-medium">Want faster answers?</p>
+              <p className="text-muted-foreground">
+                Upgrade to Growth for priority support — your tickets go to the front of the queue.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+        </Link>
+      )}
 
       {tickets.length === 0 ? (
         <EmptyState

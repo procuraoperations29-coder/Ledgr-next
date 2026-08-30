@@ -67,6 +67,11 @@ export default async function AdminTicketsPage({
                     <Link href={`/admin/tickets/${t.id}`} className="font-medium hover:underline">
                       {t.subject}
                     </Link>
+                    {t.priority === 'priority' && (
+                      <Badge variant="warning" className="ml-2 align-middle">
+                        Priority
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell className="hidden text-muted-foreground sm:table-cell">
                     {t.org_name ?? '—'}

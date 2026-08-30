@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { getActiveMembership, getUser } from '@/lib/auth/session';
+import { getOrgPlan, planHasPrioritySupport } from '@/lib/plan';
 
 export interface ActionResult {
   error?: string;
@@ -27,6 +28,10 @@ export async function createTicketAction(
   const [user, membership] = await Promise.all([getUser(), getActiveMembership()]);
   if (!user || !membership) return { error: 'Your session has expired.' };
 
+  // Growth plans get priority handling in the support queue.
+  const plan = await getOrgPlan(membership.organizationId);
+  const priority = planHasPrioritySupport(plan) ? 'priority' : 'normal';
+
   const supabase = await createClient();
   const { data: ticket, error } = await supabase
     .from('support_tickets')
@@ -35,6 +40,7 @@ export async function createTicketAction(
       created_by: user.id,
       subject: parsed.data.subject,
       category: parsed.data.category,
+      priority,
     })
     .select('id')
     .single();

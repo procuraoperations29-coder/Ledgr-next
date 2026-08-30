@@ -36,3 +36,18 @@ export async function getOrgPlan(orgId: string): Promise<OrgPlan> {
 export function planAllowsBranding(plan: OrgPlan): boolean {
   return plan.code === 'growth';
 }
+
+/** Growth-only capabilities. */
+export function isGrowth(plan: OrgPlan): boolean {
+  return plan.code === 'growth';
+}
+
+/** Growth tickets get priority handling in the support queue. */
+export function planHasPrioritySupport(plan: OrgPlan): boolean {
+  return plan.code === 'growth';
+}
+
+/** The 12-month forecast report is a Growth feature. */
+export function planHasForecast(plan: OrgPlan): boolean {
+  return plan.code === 'growth';
+}

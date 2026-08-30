@@ -6,14 +6,25 @@ import {
   Wallet,
   PiggyBank,
   FileText,
+  LineChart,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export const metadata = { title: 'Reports' };
 
-const REPORTS = [
+type ReportCard = {
+  href: string;
+  icon: typeof Scale;
+  title: string;
+  body: string;
+  ready: boolean;
+  growth?: boolean;
+};
+
+const REPORTS: ReportCard[] = [
   {
     href: '/reports/trial-balance',
     icon: Scale,
@@ -56,6 +67,14 @@ const REPORTS = [
     body: 'A full monthly report, board-ready.',
     ready: true,
   },
+  {
+    href: '/reports/forecast',
+    icon: LineChart,
+    title: '12-Month Forecast',
+    body: 'Project revenue, expenses and profit ahead.',
+    ready: true,
+    growth: true,
+  },
 ];
 
 export default function ReportsPage() {
@@ -84,6 +103,11 @@ export default function ReportsPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold">{r.title}</h3>
                     {!r.ready && <Badge variant="secondary">Soon</Badge>}
+                    {r.growth && (
+                      <Badge variant="secondary" className="gap-1">
+                        <Sparkles className="size-3" /> Growth
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground">{r.body}</p>
                 </div>
