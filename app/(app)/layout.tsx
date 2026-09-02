@@ -7,6 +7,7 @@ import { AppSidebar } from '@/components/app-shell/app-sidebar';
 import { AppMobileNav } from '@/components/app-shell/app-mobile-nav';
 import { UserMenu } from '@/components/app-shell/user-menu';
 import { NotificationBell } from '@/components/app-shell/notification-bell';
+import { InstallPrompt } from '@/components/pwa/install-prompt';
 
 export default async function AppLayout({
   children,
@@ -60,7 +61,10 @@ export default async function AppLayout({
 
           {/* Page body — bottom padding leaves room for the mobile nav */}
           <main className="flex-1 px-4 pb-24 pt-6 sm:px-6 lg:pb-10">
-            <div className="mx-auto w-full max-w-6xl">{children}</div>
+            <div className="mx-auto w-full max-w-6xl">
+              <InstallPrompt />
+              {children}
+            </div>
           </main>
         </div>
 
