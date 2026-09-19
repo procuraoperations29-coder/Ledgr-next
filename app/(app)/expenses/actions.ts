@@ -133,6 +133,33 @@ export async function bulkImportExpensesAction(
   };
 }
 
+export async function reverseExpenseAction(
+  id: string,
+  reason?: string
+): Promise<ActionResult> {
+  const membership = await getActiveMembership();
+  if (!membership) return { error: 'Your session has expired. Please log in again.' };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('reverse_expense', {
+    p_expense: id,
+    p_reason: reason ?? null,
+  });
+
+  if (error) {
+    const m = error.message.toLowerCase();
+    if (m.includes('already been deleted'))
+      return { error: 'This expense has already been deleted.' };
+    if (m.includes('not authorised') || m.includes('not authorized'))
+      return { error: 'You do not have permission to do that.' };
+    return { error: 'Something went wrong while deleting this expense. Please try again.' };
+  }
+
+  revalidatePath('/expenses');
+  revalidatePath('/dashboard');
+  return { ok: true };
+}
+
 export async function recordExpenseAction(
   input: z.input<typeof ExpenseSchema>
 ): Promise<ActionResult> {

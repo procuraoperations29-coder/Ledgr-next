@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/table';
 import { formatMoney, formatDate } from '@/lib/format';
 import { RecordExpenseDialog } from './record-expense-dialog';
+import { ExpenseRowActions } from '@/components/expenses/row-actions';
+import { cn } from '@/lib/utils';
 
 export const metadata = { title: 'Expenses' };
 
@@ -77,16 +79,19 @@ export default async function ExpensesPage() {
                 <TableHead>Details</TableHead>
                 <TableHead className="hidden sm:table-cell">Category</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((e) => (
-                <TableRow key={e.id}>
+              {expenses.map((e) => {
+                const reversed = e.status === 'reversed';
+                return (
+                <TableRow key={e.id} className={cn(reversed && 'opacity-50')}>
                   <TableCell className="whitespace-nowrap text-muted-foreground">
                     {formatDate(e.txn_date, 'short')}
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">
+                    <div className={cn('font-medium', reversed && 'line-through')}>
                       {e.description ||
                         e.category?.plain_name ||
                         e.category?.name ||
@@ -94,7 +99,12 @@ export default async function ExpensesPage() {
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {e.supplier?.name || e.vendor || '—'}
-                      {e.on_credit && (
+                      {reversed && (
+                        <Badge variant="default" className="ml-2">
+                          Deleted
+                        </Badge>
+                      )}
+                      {!reversed && e.on_credit && (
                         <Badge variant="warning" className="ml-2">
                           {e.status === 'unpaid' ? 'Unpaid' : 'On credit'}
                         </Badge>
@@ -104,11 +114,25 @@ export default async function ExpensesPage() {
                   <TableCell className="hidden sm:table-cell">
                     {e.category?.plain_name || e.category?.name}
                   </TableCell>
-                  <TableCell className="text-right font-semibold tabular-nums">
+                  <TableCell className={cn('text-right font-semibold tabular-nums', reversed && 'line-through')}>
                     {formatMoney(e.amount, currency)}
                   </TableCell>
+                  <TableCell className="text-right">
+                    {!reversed && (
+                      <ExpenseRowActions
+                        id={e.id}
+                        label={
+                          e.description ||
+                          e.category?.plain_name ||
+                          e.category?.name ||
+                          'Expense'
+                        }
+                      />
+                    )}
+                  </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </div>
