@@ -1,8 +1,9 @@
-import { Check, Sparkles } from 'lucide-react';
+import { AlertTriangle, Check, Sparkles } from 'lucide-react';
 import { getActiveMembership } from '@/lib/auth/session';
 import { getSubscription, getPlans } from '@/lib/subscription';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatMoney, formatDate } from '@/lib/format';
 import { SubscribeButton } from './subscribe-button';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,28 @@ export default async function BillingPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Billing &amp; Plan</h1>
         <p className="text-sm text-muted-foreground">Choose the plan that fits your business.</p>
       </div>
+
+      {(membership?.organization.status === 'suspended' ||
+        membership?.organization.status === 'past_due') && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle />
+          <AlertDescription>
+            {membership.organization.status === 'past_due'
+              ? "Your last payment didn't go through, so the rest of Ledgr is locked until it's sorted out."
+              : 'Your service is suspended — likely because a trial or subscription payment lapsed. The rest of Ledgr is locked until you subscribe.'}{' '}
+            Choose a plan below to restore access right away.
+          </AlertDescription>
+        </Alert>
+      )}
+      {membership?.organization.status === 'cancelled' && (
+        <Alert variant="warning" className="mb-6">
+          <AlertTriangle />
+          <AlertDescription>
+            Your subscription was cancelled. Pick a plan below to reactivate your
+            account.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Current status */}
       <Card className="mb-6">

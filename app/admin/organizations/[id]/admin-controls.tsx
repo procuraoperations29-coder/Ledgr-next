@@ -4,12 +4,17 @@ import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import {
-  setOrgStatusAction,
-  setSubscriptionStatusAction,
-  extendTrialAction,
-} from '../../actions';
+import { setBillingStatusAction, extendTrialAction } from '../../actions';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+type Status = 'active' | 'suspended' | 'cancelled';
+
+const STATUS_BUTTONS: { status: Status; label: string; variant: 'default' | 'destructive' | 'outline' }[] = [
+  { status: 'active', label: 'Activate', variant: 'default' },
+  { status: 'suspended', label: 'Suspend', variant: 'destructive' },
+  { status: 'cancelled', label: 'Cancel subscription', variant: 'outline' },
+];
 
 export function AdminControls({
   orgId,
@@ -32,56 +37,37 @@ export function AdminControls({
     });
   }
 
-  const suspended = status === 'suspended';
-
   return (
     <div className="flex flex-wrap gap-2">
-      {suspended ? (
-        <Button
-          size="sm"
-          disabled={pending}
-          onClick={() => run(() => setOrgStatusAction({ orgId, status: 'active' }), 'Business activated')}
-        >
-          {pending && <Loader2 className="size-4 animate-spin" />}
-          Activate business
-        </Button>
-      ) : (
-        <Button
-          size="sm"
-          variant="destructive"
-          disabled={pending}
-          onClick={() => run(() => setOrgStatusAction({ orgId, status: 'suspended' }), 'Business suspended')}
-        >
-          {pending && <Loader2 className="size-4 animate-spin" />}
-          Suspend business
-        </Button>
-      )}
+      {STATUS_BUTTONS.map((btn) => {
+        const isCurrent = status === btn.status;
+        return (
+          <Button
+            key={btn.status}
+            size="sm"
+            variant={btn.variant}
+            disabled={pending || isCurrent}
+            className={cn(isCurrent && 'opacity-50')}
+            onClick={() =>
+              run(
+                () => setBillingStatusAction({ orgId, status: btn.status }),
+                `Business ${btn.label.toLowerCase()}d`
+              )
+            }
+          >
+            {pending && <Loader2 className="size-4 animate-spin" />}
+            {isCurrent ? `Currently ${btn.label.toLowerCase()}` : btn.label}
+          </Button>
+        );
+      })}
 
       <Button
         size="sm"
         variant="outline"
         disabled={pending}
-        onClick={() => run(() => extendTrialAction({ orgId, days: 14 }), 'Trial extended 14 days')}
+        onClick={() => run(() => extendTrialAction({ orgId, days: 7 }), 'Trial extended 7 days')}
       >
-        Extend trial +14d
-      </Button>
-
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={pending}
-        onClick={() => run(() => setSubscriptionStatusAction({ orgId, status: 'active' }), 'Subscription activated')}
-      >
-        Mark subscription active
-      </Button>
-
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={pending}
-        onClick={() => run(() => setSubscriptionStatusAction({ orgId, status: 'cancelled' }), 'Subscription cancelled')}
-      >
-        Cancel subscription
+        Extend trial +7d
       </Button>
     </div>
   );

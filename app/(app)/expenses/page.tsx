@@ -1,9 +1,11 @@
-import { ReceiptText } from 'lucide-react';
+import Link from 'next/link';
+import { ReceiptText, Upload } from 'lucide-react';
 import { getActiveMembership } from '@/lib/auth/session';
 import { getAccounts } from '@/lib/accounting/queries';
 import { getExpenses, getSuppliers } from '@/lib/sme/queries';
 import type { Account } from '@/lib/accounting/types';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   Table,
@@ -45,12 +47,19 @@ export default async function ExpensesPage() {
             Track what you spend, and on what.
           </p>
         </div>
-        <RecordExpenseDialog
-          categories={categories}
-          paymentAccounts={paymentAccounts}
-          suppliers={suppliers}
-          currency={currency}
-        />
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/expenses/import">
+              <Upload className="size-4" /> Bulk Upload
+            </Link>
+          </Button>
+          <RecordExpenseDialog
+            categories={categories}
+            paymentAccounts={paymentAccounts}
+            suppliers={suppliers}
+            currency={currency}
+          />
+        </div>
       </div>
 
       {expenses.length === 0 ? (

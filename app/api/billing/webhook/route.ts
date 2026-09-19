@@ -1,6 +1,6 @@
 import { type NextRequest } from 'next/server';
 import { getPaymentProvider, billingConfigured } from '@/lib/billing';
-import { activateFromPayment } from '@/lib/billing/activate';
+import { activateFromPayment, suspendFromFailedPayment } from '@/lib/billing/activate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,6 +29,8 @@ export async function POST(request: NextRequest) {
   const event = provider.parseWebhook(body);
   if (event?.status === 'success') {
     await activateFromPayment(event.reference, provider.name);
+  } else if (event?.status === 'failed') {
+    await suspendFromFailedPayment(event.reference, provider.name);
   }
 
   return new Response('ok', { status: 200 });

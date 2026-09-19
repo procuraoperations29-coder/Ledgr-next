@@ -1736,8 +1736,8 @@ begin
     (organization_id, plan_id, status, trial_ends_at,
      current_period_start, current_period_end)
   values
-    (p_org, v_plan, 'trial', now() + interval '14 days',
-     now(), now() + interval '14 days')
+    (p_org, v_plan, 'trial', now() + interval '7 days',
+     now(), now() + interval '7 days')
   returning id into v_sub;
 
   return v_sub;
@@ -1894,5 +1894,58 @@ values (
 )
 on conflict (code) do nothing;
 
+
+-- FILE: 20260101001500_billing_status.sql
+-- ─────────────────────────────────────────────────────────────
+-- Ledgr · 0015 · Billing status enforcement
+-- Lazily suspends an org once a trial or paid period lapses with no
+-- successful payment. Called from the app on session load.
+-- ─────────────────────────────────────────────────────────────
+create or replace function public.sync_org_billing_status(p_org uuid)
+returns public.org_status
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_sub    record;
+  v_status public.org_status;
+begin
+  select status, trial_ends_at, current_period_end
+    into v_sub
+    from public.subscriptions
+   where organization_id = p_org;
+
+  if v_sub is null then
+    select status into v_status from public.organizations where id = p_org;
+    return v_status;
+  end if;
+
+  select status into v_status from public.organizations where id = p_org;
+  if v_status in ('suspended', 'cancelled') then
+    return v_status;
+  end if;
+
+  if v_sub.status = 'trial'
+     and v_sub.trial_ends_at is not null
+     and v_sub.trial_ends_at < now() then
+    update public.subscriptions set status = 'past_due' where organization_id = p_org;
+    update public.organizations set status = 'suspended' where id = p_org;
+    return 'suspended';
+  end if;
+
+  if v_sub.status = 'active'
+     and v_sub.current_period_end is not null
+     and v_sub.current_period_end < now() then
+    update public.subscriptions set status = 'past_due' where organization_id = p_org;
+    update public.organizations set status = 'suspended' where id = p_org;
+    return 'suspended';
+  end if;
+
+  return v_status;
+end;
+$$;
+
+grant execute on function public.sync_org_billing_status(uuid) to authenticated;
 
 COMMIT;

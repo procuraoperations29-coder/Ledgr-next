@@ -22,6 +22,117 @@ export interface ActionResult {
   ok?: boolean;
 }
 
+export interface BulkExpenseRow {
+  rowNumber: number;
+  categoryAccountId: string;
+  amountMajor: number;
+  date: string;
+  paymentAccountId?: string;
+  supplierId?: string;
+  vendor?: string;
+  description?: string;
+  onCredit: boolean;
+}
+
+export interface BulkImportResultRow {
+  rowNumber: number;
+  ok: boolean;
+  error?: string;
+}
+
+export interface BulkImportResult {
+  successCount: number;
+  failureCount: number;
+  rows: BulkImportResultRow[];
+}
+
+/**
+ * Import many expenses at once. Each row goes through the same
+ * `record_expense` RPC as the single-entry form, one at a time — a bad row
+ * is skipped and reported rather than failing the whole file.
+ */
+export async function bulkImportExpensesAction(
+  input: BulkExpenseRow[]
+): Promise<BulkImportResult> {
+  const membership = await getActiveMembership();
+  if (!membership) {
+    return {
+      successCount: 0,
+      failureCount: input.length,
+      rows: input.map((r) => ({
+        rowNumber: r.rowNumber,
+        ok: false,
+        error: 'Your session has expired. Please log in again.',
+      })),
+    };
+  }
+
+  const supabase = await createClient();
+  const results: BulkImportResultRow[] = [];
+  let successCount = 0;
+
+  const rows = input.slice(0, 500);
+
+  for (const row of rows) {
+    const parsed = ExpenseSchema.safeParse(row);
+    if (!parsed.success) {
+      results.push({
+        rowNumber: row.rowNumber,
+        ok: false,
+        error: parsed.error.issues[0]?.message ?? 'Please check this row.',
+      });
+      continue;
+    }
+    const data = parsed.data;
+    if (!data.onCredit && !data.paymentAccountId) {
+      results.push({
+        rowNumber: row.rowNumber,
+        ok: false,
+        error: 'Choose the account this was paid from, or mark it as on credit.',
+      });
+      continue;
+    }
+
+    const { error } = await supabase.rpc('record_expense', {
+      p_org: membership.organizationId,
+      p_category_account: data.categoryAccountId,
+      p_amount: Math.round(data.amountMajor * 100),
+      p_date: data.date,
+      p_payment_account: data.onCredit ? null : data.paymentAccountId,
+      p_supplier: data.supplierId ?? null,
+      p_vendor: data.vendor ?? null,
+      p_description: data.description ?? null,
+      p_recurrence: 'none',
+      p_on_credit: data.onCredit,
+    });
+
+    if (error) {
+      const m = error.message.toLowerCase();
+      let friendly = 'Could not save this row. Please try again.';
+      if (m.includes('no accounts payable'))
+        friendly = 'No payable account was found. Please check your chart of accounts.';
+      if (m.includes('not authorised') || m.includes('not authorized'))
+        friendly = 'You do not have permission to do that.';
+      results.push({ rowNumber: row.rowNumber, ok: false, error: friendly });
+      continue;
+    }
+
+    successCount++;
+    results.push({ rowNumber: row.rowNumber, ok: true });
+  }
+
+  if (successCount > 0) {
+    revalidatePath('/expenses');
+    revalidatePath('/dashboard');
+  }
+
+  return {
+    successCount,
+    failureCount: results.length - successCount,
+    rows: results,
+  };
+}
+
 export async function recordExpenseAction(
   input: z.input<typeof ExpenseSchema>
 ): Promise<ActionResult> {

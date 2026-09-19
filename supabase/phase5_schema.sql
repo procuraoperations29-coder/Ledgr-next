@@ -210,8 +210,8 @@ begin
     (organization_id, plan_id, status, trial_ends_at,
      current_period_start, current_period_end)
   values
-    (p_org, v_plan, 'trial', now() + interval '14 days',
-     now(), now() + interval '14 days')
+    (p_org, v_plan, 'trial', now() + interval '7 days',
+     now(), now() + interval '7 days')
   returning id into v_sub;
 
   return v_sub;

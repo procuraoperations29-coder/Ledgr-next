@@ -60,9 +60,26 @@ export async function getActiveMembership(): Promise<Membership | null> {
 
   const cookieStore = await cookies();
   const selected = cookieStore.get(ACTIVE_ORG_COOKIE)?.value;
-  return (
-    memberships.find((m) => m.organizationId === selected) ?? memberships[0]
-  );
+  const membership =
+    memberships.find((m) => m.organizationId === selected) ?? memberships[0];
+
+  // Best-effort: there's no billing cron, so this is what actually catches
+  // a lapsed trial or missed renewal and flips the org to 'suspended' — the
+  // middleware also calls this, but pages can be reached without going
+  // through the gate (e.g. the billing page itself), so keep this in sync too.
+  try {
+    const supabase = await createClient();
+    const { data: synced } = await supabase.rpc('sync_org_billing_status', {
+      p_org: membership.organizationId,
+    });
+    if (typeof synced === 'string') {
+      membership.organization.status = synced;
+    }
+  } catch {
+    // Non-fatal — worst case the status is a request stale.
+  }
+
+  return membership;
 }
 
 /**

@@ -40,51 +40,57 @@ const StatusSchema = z.object({
   status: z.enum(['trial', 'active', 'past_due', 'suspended', 'cancelled']),
 });
 
-export async function setOrgStatusAction(
+/**
+ * The one action the admin UI should use to change a business's billing
+ * state. Organizations.status is what actually gates app access, and
+ * subscriptions.status is the "why" shown on the billing page — they must
+ * always move together, or the business sees no visible change when an
+ * admin clicks Activate/Suspend/Cancel (previously each button only touched
+ * one of the two tables).
+ */
+export async function setBillingStatusAction(
   input: z.input<typeof StatusSchema>
 ): Promise<ActionResult> {
   const a = await auth();
   if (a.error) return { error: a.error };
   const parsed = StatusSchema.safeParse(input);
   if (!parsed.success) return { error: 'Invalid request.' };
+  const { orgId, status } = parsed.data;
 
   const svc = createServiceRoleClient();
-  const { error } = await svc
-    .from('organizations')
-    .update({ status: parsed.data.status })
-    .eq('id', parsed.data.orgId);
-  if (error) return { error: 'Could not update the business.' };
 
-  await logAdmin(a.user!.id, `admin.status.${parsed.data.status}`, parsed.data.orgId, `Business status set to ${parsed.data.status}`);
-  revalidatePath(`/admin/organizations/${parsed.data.orgId}`);
+  const { error: orgError } = await svc
+    .from('organizations')
+    .update({ status })
+    .eq('id', orgId);
+  if (orgError) return { error: 'Could not update the business.' };
+
+  const subUpdate: Record<string, unknown> = { status };
+  if (status === 'active') {
+    // Reactivating manually should also clear a lapsed period so the
+    // lazy billing-status sync doesn't immediately flip it back.
+    const periodEnd = new Date();
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
+    subUpdate.current_period_start = new Date().toISOString();
+    subUpdate.current_period_end = periodEnd.toISOString();
+  }
+  const { error: subError } = await svc
+    .from('subscriptions')
+    .update(subUpdate)
+    .eq('organization_id', orgId);
+  // A missing subscription row isn't fatal — the org-level status still applies.
+  void subError;
+
+  await logAdmin(a.user!.id, `admin.status.${status}`, orgId, `Business + subscription status set to ${status}`);
+  revalidatePath(`/admin/organizations/${orgId}`);
   revalidatePath('/admin/organizations');
   return { ok: true };
 }
 
-const SubSchema = z.object({
-  orgId: z.string().uuid(),
-  status: z.enum(['trial', 'active', 'past_due', 'cancelled', 'suspended']),
-});
-
-export async function setSubscriptionStatusAction(
-  input: z.input<typeof SubSchema>
-): Promise<ActionResult> {
-  const a = await auth();
-  if (a.error) return { error: a.error };
-  const parsed = SubSchema.safeParse(input);
-  if (!parsed.success) return { error: 'Invalid request.' };
-
-  const svc = createServiceRoleClient();
-  const { error } = await svc
-    .from('subscriptions')
-    .update({ status: parsed.data.status })
-    .eq('organization_id', parsed.data.orgId);
-  if (error) return { error: 'Could not update the subscription.' };
-
-  await logAdmin(a.user!.id, `admin.subscription.${parsed.data.status}`, parsed.data.orgId, `Subscription set to ${parsed.data.status}`);
-  revalidatePath(`/admin/organizations/${parsed.data.orgId}`);
-  return { ok: true };
-}
+/** @deprecated Use {@link setBillingStatusAction} — kept for any external callers. */
+export const setOrgStatusAction = setBillingStatusAction;
+/** @deprecated Use {@link setBillingStatusAction} — kept for any external callers. */
+export const setSubscriptionStatusAction = setBillingStatusAction;
 
 const TrialSchema = z.object({
   orgId: z.string().uuid(),
@@ -115,6 +121,13 @@ export async function extendTrialAction(
     .update({ trial_ends_at: next.toISOString(), status: 'trial' })
     .eq('organization_id', parsed.data.orgId);
   if (error) return { error: 'Could not extend the trial.' };
+
+  // Reopen access if this org had been locked out — extending the trial is
+  // pointless if the org status still reads 'suspended'.
+  await svc
+    .from('organizations')
+    .update({ status: 'trial' })
+    .eq('id', parsed.data.orgId);
 
   await logAdmin(a.user!.id, 'admin.trial.extend', parsed.data.orgId, `Trial extended by ${parsed.data.days} days`);
   revalidatePath(`/admin/organizations/${parsed.data.orgId}`);

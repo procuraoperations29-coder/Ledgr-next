@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeftRight, Plus } from 'lucide-react';
+import { ArrowLeftRight, Plus, Upload } from 'lucide-react';
 import { getActiveMembership } from '@/lib/auth/session';
 import { getTransactions } from '@/lib/accounting/queries';
 import { moneyDirection, TRANSACTION_LABELS } from '@/lib/accounting/transaction-map';
@@ -18,6 +18,7 @@ import {
 import { formatMoney, formatDate } from '@/lib/format';
 import { buildCsv } from '@/lib/csv';
 import { DownloadCsvButton } from '@/components/download-csv-button';
+import { TransactionRowActions } from '@/components/transactions/row-actions';
 import { cn } from '@/lib/utils';
 
 export const metadata = { title: 'Transactions' };
@@ -52,6 +53,11 @@ export default async function TransactionsPage() {
           {rows.length > 0 && (
             <DownloadCsvButton csv={csv} filename="transactions.csv" />
           )}
+          <Button variant="outline" asChild>
+            <Link href="/transactions/import">
+              <Upload className="size-4" /> Bulk Upload
+            </Link>
+          </Button>
           <Button asChild>
             <Link href="/transactions/new">
               <Plus className="size-4" /> Record
@@ -82,6 +88,7 @@ export default async function TransactionsPage() {
                 <TableHead>Details</TableHead>
                 <TableHead className="hidden sm:table-cell">Type</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -119,6 +126,19 @@ export default async function TransactionsPage() {
                     >
                       {dir === 'in' ? '+' : dir === 'out' ? '−' : ''}
                       {formatMoney(r.amount, currency)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {!reversed && (
+                        <TransactionRowActions
+                          id={r.id}
+                          label={
+                            r.description ||
+                            r.category?.plain_name ||
+                            r.category?.name ||
+                            TRANSACTION_LABELS[r.type as TransactionType]
+                          }
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                 );

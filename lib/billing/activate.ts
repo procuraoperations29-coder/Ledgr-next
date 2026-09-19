@@ -44,4 +44,50 @@ export async function activateFromPayment(
     .from('subscriptions')
     .update(subUpdate)
     .eq('organization_id', payment.organization_id);
+
+  // Keep the org-level status (what actually gates app access) in sync with
+  // the subscription — a successful payment always lifts a suspension.
+  await svc
+    .from('organizations')
+    .update({ status: 'active' })
+    .eq('id', payment.organization_id);
+}
+
+/**
+ * Mark a payment failed. Suspends the org immediately: Ledgr has no billing
+ * cron, so a failed/declined charge is the one moment we reliably hear about
+ * non-payment — don't wait for a lazy trial/period check to catch up.
+ * Idempotent, like `activateFromPayment`.
+ */
+export async function suspendFromFailedPayment(
+  reference: string,
+  provider: string
+): Promise<void> {
+  const svc = createServiceRoleClient();
+
+  const { data: payment } = await svc
+    .from('billing_payments')
+    .select('id, organization_id, status')
+    .eq('provider', provider)
+    .eq('provider_ref', reference)
+    .maybeSingle();
+
+  if (!payment) return;
+  if (payment.status === 'success' || payment.status === 'failed') return; // already processed
+
+  await svc
+    .from('billing_payments')
+    .update({ status: 'failed' })
+    .eq('id', payment.id);
+
+  await svc
+    .from('subscriptions')
+    .update({ status: 'past_due' })
+    .eq('organization_id', payment.organization_id);
+
+  await svc
+    .from('organizations')
+    .update({ status: 'suspended' })
+    .eq('id', payment.organization_id)
+    .neq('status', 'cancelled'); // a cancelled org shouldn't bounce to suspended
 }
